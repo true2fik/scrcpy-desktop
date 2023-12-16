@@ -1,6 +1,5 @@
 param($Resolution, $DPI)
 
-$LAUNCHER_PACKAGE = "com.farmerbb.taskbar"
 $SCRIPT_NAME = $MyInvocation.MyCommand.Name
 
 # By default get adb and scrcpy paths from special bin folder, like in older versions of this script.
@@ -84,17 +83,6 @@ function target_sanity_check {
 		if ("$output" -eq "") {
 			throw "Your Android device is missing '$i' and this script won't work without it. Sorry..."
 		}
-	}
-
-	if ( !([string](& $PATHS.adb shell "pm list package | grep $LAUNCHER_PACKAGE"))) {
-		echowrapper "Taskbar not installed, please install it so that you wouldn't end"
-		echowrapper "up in a situation where the launcher is not installed"
-		echowrapper "https://github.com/nikp123/scrcpy-desktop/issues/7"
-		echowrapper
-		echowrapper "App link: https://play.google.com/store/apps/details?id=$LAUNCHER_PACKAGE"
-		echowrapper "After installing the app, we can continue..."
-		& $PATHS.adb shell am start -a android.intent.action.VIEW -d "market://details?id=$LAUNCHER_PACKAGE"
-		pause
 	}
 }
 

@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
 
-LAUNCHER_PACKAGE=com.farmerbb.taskbar
-
 # Functions go here
 function enable_desktop_mode {
 	echo "This device doesn't have desktop mode enabled!!!!"
 	echo "This will require enabling said option (done automatically)"
 	echo "However for it to apply, your device needs to restart"
-	read -p "Press any key restart your phone and continue with this script"
+	read -rp "Press any key restart your phone and continue with this script"
 
 	adb shell settings put global force_desktop_mode_on_external_displays 1
 	adb shell settings put global force_allow_on_external 1
@@ -35,36 +33,25 @@ function enable_desktop_mode {
 function host_sanity_check {
 	# Check if all the executables are present on the host device
 	for i in adb scrcpy bc xdpyinfo tail pgrep; do
-		which $i >/dev/null 2>&1
-		[[ $? -ne 0 ]] && \
+        if ! command -v $i >/dev/null 2>&1; then
 			echo "Please download $i and add it into your path before running this script." && \
 			exit 1
+        fi
 	done
 }
 
 function target_sanity_check {
-	[[ $(adb shell getprop ro.build.version.sdk) < 29 ]] && \
+	[[ $(adb shell getprop ro.build.version.sdk) -lt 29 ]] && \
 		echo "Sorry, desktop mode is only supported on Android 10 and up." && \
 		exit 1
 
 	# Check if all the executables are present on the target device
 	for i in sh ps grep cut sort uniq head; do
-		adb shell which $i >/dev/null 2>&1
-		[[ $? -ne 0 ]] && \
+        if ! which $i >/dev/null 2>&1; then
 			echo "Your Android device is missing '$i' and this script won't work without it. Sorry..." && \
 			exit 1
+        fi
 	done
-
-	launcherpresent=$(adb shell pm list package | grep $LAUNCHER_PACKAGE)
-	if [ -z $launcherpresent ]; then
-		echo "Taskbar not installed, please install it so that you wouldn't end"
-		echo "up in a situation where the launcher is not installed"
-		echo "https://github.com/nikp123/scrcpy-desktop/issues/7"
-		echo
-		echo "App link: https://play.google.com/store/apps/details?id=$LAUNCHER_PACKAGE"
-		adb shell am start -a android.intent.action.VIEW -d "market://details?=$LAUNCHER_PACKAGE"
-		read -p "Once you've installed the app, press any key to continue."
-	fi
 }
 
 function get_display_params {
@@ -80,7 +67,7 @@ function get_display_params {
 		DENSITY=$2
 	fi
 
-	TARGET_DISPLAY_MODE=$(echo $RESOLUTION/$DENSITY)
+	TARGET_DISPLAY_MODE="$RESOLUTION/$DENSITY"
 }
 
 PAYLOAD_STORE_DIR=payload
@@ -125,10 +112,10 @@ if [ "$result" == "0" ]; then
 	enable_desktop_mode
 fi
 
-get_display_params $1 $2
+get_display_params "$1" "$2"
 
 # Use the secondary screen option to generate the other screen
-adb shell settings put global overlay_display_devices $TARGET_DISPLAY_MODE
+adb shell settings put global overlay_display_devices "$TARGET_DISPLAY_MODE"
 
 # Wait for the display to appear
 sleep 1
@@ -156,7 +143,7 @@ if [ "$display" = "" ]; then
 fi
 
 # use -S if you're edgy
-scrcpy --display $display -w -S -K &
+scrcpy --display "$display" -w -S -K &
 
 # ???. Use the this one in case $! doesn't work??
 #SCRCPY_PID=$(pgrep scrcpy)
