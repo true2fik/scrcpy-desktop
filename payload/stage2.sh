@@ -31,7 +31,7 @@ while true ; do
 done
 
 # Destroy the other screen as it is no longer needed
-echowrapper `settings delete global overlay_display_devices`
+echowrapper "$(settings delete global overlay_display_devices)"
 
 # (Hopefully) Restore sane defaults
 # settings put global enable_freeform_support 0
