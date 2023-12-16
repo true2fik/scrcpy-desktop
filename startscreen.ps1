@@ -165,7 +165,7 @@ if ( "$display" -eq "" ) {
 }
 
 # use -S if you're edgy
-$SCRCPY_PID = (Start-Process -NoNewWindow -FilePath $PATHS.scrcpy -PassThru -ArgumentList @('--display', "$display", '-w', '--turn-screen-off')).ID
+$SCRCPY_PID = (Start-Process -NoNewWindow -FilePath $PATHS.scrcpy -PassThru -ArgumentList @('--display-id=$display", '-w', '--turn-screen-off')).ID
 
 #
 # Payload section starts here
